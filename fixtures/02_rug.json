@@ -1,0 +1,3 @@
+{"token":"ngmi.testnet","code_hash":"Def","keys":[{"public_key":"ed25519:y","access_key":{"permission":"FullAccess"}}],
+ "metadata":{"spec":"ft-1.0.0","symbol":"NGMI","icon":null},"total_supply":"1000000",
+ "balances":{"dev.testnet":"800000","b.testnet":"50000"},"market":{"liquidity_usd":1200,"volume_24h":90000}}
