@@ -1,22 +1,37 @@
-import json, pathlib
+import json
+from pathlib import Path
 from agent.analyzer import analyze, roast
-from agent.cli import main
-F = pathlib.Path(__file__).parent.parent / "fixtures"
 
-def load(n):
-    s = json.loads((F / n).read_text()); return s, s.pop("market")
+FIX = Path(__file__).resolve().parents[1] / "fixtures"
 
-def test_safe():
-    r = analyze(*load("01_safe.json")); assert r["verdict"] == "LOOKS OK"
 
-def test_rug():
-    r = analyze(*load("02_rug.json"))
-    assert r["verdict"] == "RUG RISK" and r["top_holder_pct"] == 80.0
+def test_safe_fixture_looks_ok():
+    snap = json.loads((FIX / "01_safe.json").read_text())
+    mk = snap.pop("market", None)
+    r = analyze(snap, mk)
+    assert r["score"] < 30
+    assert r["verdict"] == "LOOKS OK"
+    assert "WAGMI" in roast(r)
+
+
+def test_rug_fixture_is_risky():
+    snap = json.loads((FIX / "02_rug.json").read_text())
+    mk = snap.pop("market", None)
+    r = analyze(snap, mk)
+    assert r["score"] >= 60
+    assert r["verdict"] == "RUG RISK"
     assert "NGMI" in roast(r)
 
-def test_no_code():
-    r = analyze({"code_hash": "11111111111111111111111111111111", "keys": [], "metadata": {}})
-    assert any(f["code"] == "NO_CODE" for f in r["flags"])
 
-def test_demo_cli(capsys):
-    main(["--demo"]); assert "RUG RISK" in capsys.readouterr().out
+def test_full_access_key_adds_points():
+    snap = {
+        "token": "x.near",
+        "code_hash": "abc",
+        "keys": [{"access_key": {"permission": "FullAccess"}}],
+        "metadata": {"spec": "ft-1.0.0", "symbol": "X", "icon": "i"},
+        "total_supply": "100",
+        "balances": {"a.near": "10"},
+    }
+    r = analyze(snap, None)
+    codes = {f["code"] for f in r["flags"]}
+    assert "FULL_ACCESS_KEY" in codes

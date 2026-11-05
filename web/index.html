@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAGMI Meme Agent (NEAR)</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1220; --card:#141c2e; --ink:#e8eefc; --muted:#9bb0d0; --ok:#3ddc97; --bad:#ff6b6b; --warn:#ffd166; --accent:#6ea8fe; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: radial-gradient(1200px 600px at 10% -10%, #1a2744, var(--bg)); color: var(--ink); min-height:100vh; }
+    main { max-width: 880px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    h1 { font-size: 1.6rem; margin: 0 0 .35rem; }
+    .sub { color: var(--muted); margin-bottom: 1.25rem; line-height: 1.45; }
+    .card { background: var(--card); border: 1px solid #24314d; border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 1rem; }
+    label { display:block; font-size:.85rem; color:var(--muted); margin-bottom:.35rem; }
+    input, select, button { font: inherit; }
+    .row { display:flex; flex-wrap:wrap; gap:.6rem; align-items:end; }
+    .row > div { flex: 1 1 180px; }
+    input[type=text], select { width:100%; padding:.65rem .7rem; border-radius:10px; border:1px solid #2d3d5c; background:#0e1626; color:var(--ink); }
+    button { padding:.7rem 1rem; border:0; border-radius:10px; background:var(--accent); color:#071018; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.55; cursor:wait; }
+    .chips { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.75rem; }
+    .chips button { background:#1c2a44; color:var(--ink); font-weight:600; font-size:.85rem; }
+    pre { white-space: pre-wrap; word-break: break-word; background:#0a101c; border-radius:10px; padding:.9rem; border:1px solid #223049; font-size:.85rem; overflow:auto; }
+    .verdict { font-size:1.15rem; font-weight:700; }
+    .ok { color: var(--ok); } .bad { color: var(--bad); } .warn { color: var(--warn); }
+    .flags li { margin: .25rem 0; }
+    footer { margin-top: 1.5rem; color: var(--muted); font-size: .85rem; line-height: 1.4; }
+    a { color: var(--accent); }
+    .steps { list-style: none; padding:0; margin:0; }
+    .steps li { padding:.35rem 0; border-bottom:1px solid #223049; font-size:.9rem; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>WAGMI Meme Agent (NEAR)</h1>
+  <p class="sub">Read-only rug-risk agent for NEP-141 tokens. Built at NEAR HACKATHON 2026 (tracks: AI Security &amp; Defense, Agent Economy). No wallet connect. No sign-up. No keys.</p>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="token">Token account</label>
+        <input id="token" type="text" value="wrap.near" placeholder="wrap.near" />
+      </div>
+      <div style="flex:0 1 140px">
+        <label for="network">Network</label>
+        <select id="network">
+          <option value="mainnet" selected>mainnet</option>
+          <option value="testnet">testnet</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto">
+        <label>&nbsp;</label>
+        <button id="go" type="button">Analyze</button>
+      </div>
+    </div>
+    <div class="chips">
+      <button type="button" data-t="wrap.near">wrap.near</button>
+      <button type="button" data-t="usdt.tether-token.near">usdt.tether-token.near</button>
+      <button type="button" data-t="token.rhealab.near">token.rhealab.near</button>
+      <button type="button" id="demoBtn">Offline demo</button>
+    </div>
+  </div>
+
+  <div class="card" id="out" hidden>
+    <div id="summary"></div>
+    <h3>Agent explanation</h3>
+    <pre id="expl"></pre>
+    <h3>Tool steps</h3>
+    <ul class="steps" id="steps"></ul>
+    <h3>Raw JSON</h3>
+    <pre id="raw"></pre>
+  </div>
+
+  <footer>
+    Public repo: <a href="https://github.com/Nwa-Ani/wagmi-meme-agent-near">github.com/Nwa-Ani/wagmi-meme-agent-near</a>.
+    API: <code>/api/analyze?token=wrap.near&amp;network=mainnet</code>, <code>/api/demo</code>, <code>/health</code>.
+  </footer>
+</main>
+<script>
+const out = document.getElementById('out');
+const go = document.getElementById('go');
+const tokenEl = document.getElementById('token');
+const netEl = document.getElementById('network');
+
+document.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => {
+  tokenEl.value = b.dataset.t; netEl.value = 'mainnet';
+}));
+
+document.getElementById('demoBtn').addEventListener('click', async () => {
+  go.disabled = true;
+  try {
+    const r = await fetch('/api/demo');
+    const j = await r.json();
+    renderDemo(j);
+  } catch (e) {
+    alert(String(e));
+  } finally { go.disabled = false; }
+});
+
+go.addEventListener('click', async () => {
+  const token = tokenEl.value.trim();
+  if (!token) return alert('Enter a token account');
+  go.disabled = true;
+  try {
+    const url = `/api/analyze?token=${encodeURIComponent(token)}&network=${encodeURIComponent(netEl.value)}`;
+    const r = await fetch(url);
+    const j = await r.json();
+    render(j);
+  } catch (e) {
+    alert(String(e));
+  } finally { go.disabled = false; }
+});
+
+function verdictClass(v) {
+  if (v === 'RUG RISK') return 'bad';
+  if (v === 'CAUTION') return 'warn';
+  return 'ok';
+}
+
+function render(j) {
+  out.hidden = false;
+  const sum = document.getElementById('summary');
+  if (j.error) {
+    sum.innerHTML = `<p class="bad">Error: ${escapeHtml(j.error)}</p>`;
+    document.getElementById('expl').textContent = j.explanation || '';
+    document.getElementById('steps').innerHTML = (j.steps||[]).map(s => `<li>[${s.ok?'ok':'FAIL'}] <b>${escapeHtml(s.tool)}</b>: ${escapeHtml(s.detail)}</li>`).join('');
+    document.getElementById('raw').textContent = JSON.stringify(j, null, 2);
+    return;
+  }
+  const r = j.report;
+  const flags = (r.flags||[]).map(f => `<li>[${f.points>0?'+':''}${f.points}] ${escapeHtml(f.msg)}</li>`).join('');
+  sum.innerHTML = `
+    <p class="verdict ${verdictClass(r.verdict)}">${escapeHtml(r.symbol||'')} (${escapeHtml(r.token)}) — ${r.score}/100 ${escapeHtml(r.verdict)}</p>
+    <p>${escapeHtml(j.roast||'')}</p>
+    <p style="color:var(--muted)">Holders: ${j.holder_count} via ${escapeHtml(j.holder_source)} on ${escapeHtml(j.network)}</p>
+    <ul class="flags">${flags}</ul>`;
+  document.getElementById('expl').textContent = j.explanation || '';
+  document.getElementById('steps').innerHTML = (j.steps||[]).map(s => `<li>[${s.ok?'ok':'FAIL'}] <b>${escapeHtml(s.tool)}</b>: ${escapeHtml(s.detail)}</li>`).join('');
+  document.getElementById('raw').textContent = JSON.stringify(j, null, 2);
+}
+
+function renderDemo(j) {
+  out.hidden = false;
+  const parts = (j.items||[]).map(it => {
+    const r = it.report;
+    return `<p class="verdict ${verdictClass(r.verdict)}">${escapeHtml(r.symbol)} — ${r.score}/100 ${escapeHtml(r.verdict)}</p><p>${escapeHtml(it.roast)}</p>`;
+  }).join('<hr style="border-color:#223049">');
+  document.getElementById('summary').innerHTML = parts || '<p>No fixtures</p>';
+  document.getElementById('expl').textContent = 'Offline fixture demo (no RPC).';
+  document.getElementById('steps').innerHTML = '';
+  document.getElementById('raw').textContent = JSON.stringify(j, null, 2);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
