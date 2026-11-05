@@ -17,7 +17,7 @@ WEB = ROOT / "web"
 DEMO_TOKENS = [
     "wrap.near",
     "usdt.tether-token.near",
-    "token.rhealab.near",
+    "blackdragon.tkn.near",
 ]
 
 
