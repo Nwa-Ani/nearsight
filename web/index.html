@@ -4,43 +4,397 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WAGMI Meme Agent (NEAR)</title>
+  <meta name="description" content="Read-only rug-risk agent for NEAR NEP-141 tokens. No wallet connect." />
   <style>
-    :root { color-scheme: dark; --bg:#0b1220; --card:#141c2e; --ink:#e8eefc; --muted:#9bb0d0; --ok:#3ddc97; --bad:#ff6b6b; --warn:#ffd166; --accent:#6ea8fe; }
+    :root {
+      color-scheme: light;
+      --bg: #f6faf8;
+      --bg2: #eef7f3;
+      --card: #ffffff;
+      --ink: #0f1f1a;
+      --muted: #5b7268;
+      --line: #d7e6df;
+      --accent: #00c08b;
+      --accent-ink: #043528;
+      --accent-soft: #d8f7ec;
+      --warm: #ff7a45;
+      --warm-soft: #ffe8df;
+      --ok: #0a9f6e;
+      --ok-bg: #e6f8f1;
+      --warn: #c47a00;
+      --warn-bg: #fff4d9;
+      --bad: #d64545;
+      --bad-bg: #fdeaea;
+      --shadow: 0 10px 30px rgba(15, 31, 26, 0.07);
+      --shadow-sm: 0 4px 14px rgba(15, 31, 26, 0.06);
+      --radius: 18px;
+      --ease: cubic-bezier(.22, 1, .36, 1);
+    }
     * { box-sizing: border-box; }
-    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: radial-gradient(1200px 600px at 10% -10%, #1a2744, var(--bg)); color: var(--ink); min-height:100vh; }
-    main { max-width: 880px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-    h1 { font-size: 1.6rem; margin: 0 0 .35rem; }
-    .sub { color: var(--muted); margin-bottom: 1.25rem; line-height: 1.45; }
-    .card { background: var(--card); border: 1px solid #24314d; border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 1rem; }
-    label { display:block; font-size:.85rem; color:var(--muted); margin-bottom:.35rem; }
-    input, select, button { font: inherit; }
-    .row { display:flex; flex-wrap:wrap; gap:.6rem; align-items:end; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 420px at 90% -10%, #dff7ee 0%, transparent 55%),
+        radial-gradient(700px 380px at -10% 20%, #ffe8df 0%, transparent 50%),
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 40%, var(--bg2) 100%);
+      line-height: 1.45;
+    }
+    main {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 2rem 1.15rem 4rem;
+    }
+    .hero {
+      margin-bottom: 1.25rem;
+      animation: rise .7s var(--ease) both;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .28rem .7rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      margin-bottom: .75rem;
+    }
+    .badge i {
+      width: .45rem; height: .45rem; border-radius: 50%;
+      background: var(--accent); display: inline-block;
+      box-shadow: 0 0 0 4px rgba(0,192,139,.18);
+    }
+    h1 {
+      margin: 0 0 .45rem;
+      font-size: clamp(1.7rem, 4vw, 2.25rem);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      max-width: 52ch;
+      font-size: 1.02rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.15rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow-sm);
+      animation: rise .7s var(--ease) both;
+    }
+    .card.delay-1 { animation-delay: .08s; }
+    .card.delay-2 { animation-delay: .16s; }
+    label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 650;
+      color: var(--muted);
+      margin-bottom: .35rem;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: .65rem; align-items: end; }
     .row > div { flex: 1 1 180px; }
-    input[type=text], select { width:100%; padding:.65rem .7rem; border-radius:10px; border:1px solid #2d3d5c; background:#0e1626; color:var(--ink); }
-    button { padding:.7rem 1rem; border:0; border-radius:10px; background:var(--accent); color:#071018; font-weight:700; cursor:pointer; }
-    button:disabled { opacity:.55; cursor:wait; }
-    .chips { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.75rem; }
-    .chips button { background:#1c2a44; color:var(--ink); font-weight:600; font-size:.85rem; }
-    pre { white-space: pre-wrap; word-break: break-word; background:#0a101c; border-radius:10px; padding:.9rem; border:1px solid #223049; font-size:.85rem; overflow:auto; }
-    .verdict { font-size:1.15rem; font-weight:700; }
-    .ok { color: var(--ok); } .bad { color: var(--bad); } .warn { color: var(--warn); }
-    .flags li { margin: .25rem 0; }
-    footer { margin-top: 1.5rem; color: var(--muted); font-size: .85rem; line-height: 1.4; }
-    a { color: var(--accent); }
-    .steps { list-style: none; padding:0; margin:0; }
-    .steps li { padding:.35rem 0; border-bottom:1px solid #223049; font-size:.9rem; }
+    input[type=text], select {
+      width: 100%;
+      padding: .78rem .85rem;
+      border-radius: 12px;
+      border: 1.5px solid var(--line);
+      background: #fbfefd;
+      color: var(--ink);
+      font: inherit;
+      transition: border-color .2s var(--ease), box-shadow .2s var(--ease), transform .15s var(--ease);
+    }
+    input[type=text]:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(0,192,139,.16);
+    }
+    button {
+      font: inherit;
+      border: 0;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: transform .15s var(--ease), box-shadow .2s var(--ease), background .2s, opacity .2s;
+    }
+    button:active:not(:disabled) { transform: scale(.97); }
+    #go {
+      padding: .82rem 1.2rem;
+      background: linear-gradient(135deg, #00d49a, #00a877);
+      color: #fff;
+      font-weight: 800;
+      box-shadow: 0 8px 20px rgba(0, 168, 119, .28);
+      min-width: 118px;
+    }
+    #go:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(0, 168, 119, .34);
+    }
+    #go:disabled { opacity: .65; cursor: wait; transform: none; }
+    .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .85rem; }
+    .chips button {
+      background: #f3faf7;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      font-weight: 650;
+      font-size: .84rem;
+      padding: .48rem .75rem;
+    }
+    .chips button:hover {
+      background: var(--accent-soft);
+      border-color: #b6ebd8;
+      transform: translateY(-1px);
+    }
+    #demoBtn {
+      background: var(--warm-soft);
+      border-color: #ffd2bf;
+      color: #8a3a1c;
+    }
+    /* Loading */
+    #loading {
+      display: none;
+      overflow: hidden;
+    }
+    #loading.on { display: block; }
+    .load-head {
+      display: flex; align-items: center; gap: .75rem; margin-bottom: .85rem;
+    }
+    .spinner {
+      width: 1.35rem; height: 1.35rem; border-radius: 50%;
+      border: 2.5px solid #cfeedf;
+      border-top-color: var(--accent);
+      animation: spin .7s linear infinite;
+      flex: 0 0 auto;
+    }
+    .pulse-bar {
+      height: 6px; border-radius: 999px; background: #e8f5ef; overflow: hidden; margin: .85rem 0 1rem;
+    }
+    .pulse-bar > span {
+      display: block; height: 100%; width: 35%;
+      background: linear-gradient(90deg, var(--accent), var(--warm));
+      border-radius: inherit;
+      animation: slide 1.2s var(--ease) infinite;
+    }
+    .load-steps { list-style: none; padding: 0; margin: 0; }
+    .load-steps li {
+      display: flex; gap: .6rem; align-items: center;
+      padding: .45rem 0; color: var(--muted); font-size: .92rem;
+      opacity: .45; transform: translateX(-6px);
+      transition: opacity .35s var(--ease), transform .35s var(--ease), color .35s;
+    }
+    .load-steps li.on { opacity: 1; transform: none; color: var(--ink); font-weight: 650; }
+    .load-steps li.done { opacity: .85; color: var(--ok); }
+    .dot {
+      width: .55rem; height: .55rem; border-radius: 50%;
+      background: #c8ddd3; flex: 0 0 auto;
+    }
+    .load-steps li.on .dot { background: var(--accent); box-shadow: 0 0 0 4px rgba(0,192,139,.15); }
+    .load-steps li.done .dot { background: var(--ok); }
+    /* Results */
+    #out { display: none; }
+    #out.on { display: block; }
+    .verdict-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1rem 1.15rem;
+      align-items: center;
+      padding: 1rem;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      margin-bottom: 1rem;
+    }
+    .verdict-card.ok { background: var(--ok-bg); border-color: #b7ead6; }
+    .verdict-card.warn { background: var(--warn-bg); border-color: #ffe0a3; }
+    .verdict-card.bad { background: var(--bad-bg); border-color: #f5c2c2; }
+    .gauge {
+      width: 92px; height: 92px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: conic-gradient(var(--gcolor, var(--ok)) calc(var(--p, 0) * 1%), #e8efe9 0);
+      position: relative;
+      transition: background .6s var(--ease);
+    }
+    .gauge::before {
+      content: "";
+      position: absolute; inset: 8px; border-radius: 50%; background: #fff;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.03);
+    }
+    .gauge-val {
+      position: relative; z-index: 1; text-align: center;
+      font-weight: 800; font-size: 1.25rem; letter-spacing: -.03em;
+      line-height: 1.05;
+    }
+    .gauge-val small { display: block; font-size: .65rem; font-weight: 650; color: var(--muted); }
+    .verdict-title {
+      margin: 0 0 .2rem;
+      font-size: clamp(1.35rem, 3.5vw, 1.7rem);
+      font-weight: 850; letter-spacing: -.02em;
+    }
+    .verdict-card.ok .verdict-title { color: var(--ok); }
+    .verdict-card.warn .verdict-title { color: var(--warn); }
+    .verdict-card.bad .verdict-title { color: var(--bad); }
+    .verdict-meta { margin: 0; color: var(--muted); font-size: .92rem; }
+    .roast {
+      margin: .55rem 0 0;
+      font-weight: 650;
+      color: var(--ink);
+    }
+    .why { margin: 0 0 1rem; }
+    .why h2 {
+      margin: 0 0 .55rem;
+      font-size: 1rem;
+      letter-spacing: -.01em;
+    }
+    .why ol {
+      margin: 0; padding: 0; list-style: none;
+      display: grid; gap: .45rem;
+    }
+    .why li {
+      display: flex; gap: .65rem; align-items: flex-start;
+      padding: .7rem .8rem;
+      border-radius: 12px;
+      background: #f7fbf9;
+      border: 1px solid var(--line);
+      opacity: 0; transform: translateY(8px);
+      animation: rise .45s var(--ease) forwards;
+    }
+    .why .tag {
+      flex: 0 0 auto;
+      min-width: 2.6rem;
+      text-align: center;
+      font-size: .75rem;
+      font-weight: 800;
+      padding: .2rem .35rem;
+      border-radius: 8px;
+      background: #eef4f1;
+      color: var(--muted);
+    }
+    .why .tag.good { background: var(--ok-bg); color: var(--ok); }
+    .why .tag.risk { background: var(--bad-bg); color: var(--bad); }
+    .why .tag.mid { background: var(--warn-bg); color: var(--warn); }
+    details.adv {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fbfdfe;
+      margin-top: .65rem;
+      overflow: hidden;
+    }
+    details.adv + details.adv { margin-top: .5rem; }
+    details.adv summary {
+      cursor: pointer;
+      padding: .8rem 1rem;
+      font-weight: 750;
+      list-style: none;
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--ink);
+    }
+    details.adv summary::-webkit-details-marker { display: none; }
+    details.adv summary::after {
+      content: "+";
+      font-size: 1.2rem;
+      color: var(--muted);
+      transition: transform .2s var(--ease);
+    }
+    details.adv[open] summary::after { content: "–"; }
+    .adv-body { padding: 0 1rem 1rem; }
+    .steps { list-style: none; padding: 0; margin: 0; }
+    .steps li {
+      padding: .55rem 0;
+      border-bottom: 1px solid var(--line);
+      font-size: .9rem;
+      opacity: 0; transform: translateY(6px);
+      animation: rise .4s var(--ease) forwards;
+    }
+    .steps li:last-child { border-bottom: 0; }
+    .steps .ok { color: var(--ok); font-weight: 750; }
+    .steps .fail { color: var(--bad); font-weight: 750; }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0f1f1a;
+      color: #d7efe4;
+      border-radius: 12px;
+      padding: .9rem;
+      font-size: .8rem;
+      overflow: auto;
+      max-height: 360px;
+      margin: 0;
+    }
+    .demo-grid { display: grid; gap: .75rem; }
+    .demo-item {
+      padding: .9rem 1rem; border-radius: 14px; border: 1px solid var(--line);
+      background: #fff;
+    }
+    footer {
+      margin-top: 1.35rem;
+      color: var(--muted);
+      font-size: .86rem;
+      line-height: 1.5;
+      animation: rise .7s var(--ease) both;
+      animation-delay: .22s;
+    }
+    footer a { color: #0a8f68; font-weight: 650; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .8em;
+      background: #eef6f2;
+      padding: .1rem .35rem;
+      border-radius: 6px;
+    }
+    .err {
+      padding: .9rem 1rem;
+      border-radius: 14px;
+      background: var(--bad-bg);
+      border: 1px solid #f5c2c2;
+      color: var(--bad);
+      font-weight: 700;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes slide {
+      0% { transform: translateX(-20%); }
+      50% { transform: translateX(180%); }
+      100% { transform: translateX(-20%); }
+    }
+    @media (max-width: 560px) {
+      .verdict-card { grid-template-columns: 1fr; justify-items: start; }
+      main { padding-top: 1.35rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+      .spinner { border-top-color: var(--accent); }
+      .pulse-bar > span { width: 55%; transform: none; }
+      .why li, .steps li { opacity: 1; transform: none; }
+    }
   </style>
 </head>
 <body>
 <main>
-  <h1>WAGMI Meme Agent (NEAR)</h1>
-  <p class="sub">Read-only rug-risk agent for NEP-141 tokens. Built at NEAR HACKATHON 2026 (tracks: AI Security &amp; Defense, Agent Economy). No wallet connect. No sign-up. No keys.</p>
+  <header class="hero">
+    <div class="badge"><i></i> NEAR HACKATHON 2026 · read-only</div>
+    <h1>WAGMI Meme Agent (NEAR)</h1>
+    <p class="sub">Paste a NEP-141 token. Get a clear rug-risk score from live NEAR data. No wallet connect. No sign-up. No keys.</p>
+  </header>
 
-  <div class="card">
+  <section class="card delay-1" aria-label="Analyze token">
     <div class="row">
       <div>
         <label for="token">Token account</label>
-        <input id="token" type="text" value="wrap.near" placeholder="wrap.near" />
+        <input id="token" type="text" value="wrap.near" placeholder="wrap.near" autocomplete="off" spellcheck="false" />
       </div>
       <div style="flex:0 1 140px">
         <label for="network">Network</label>
@@ -60,57 +414,137 @@
       <button type="button" data-t="blackdragon.tkn.near">blackdragon.tkn.near</button>
       <button type="button" id="demoBtn">Offline demo</button>
     </div>
-  </div>
+  </section>
 
-  <div class="card" id="out" hidden>
+  <section class="card delay-2" id="loading" aria-live="polite" aria-busy="true">
+    <div class="load-head">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>
+        <strong id="loadTitle">Checking the token…</strong>
+        <div class="verdict-meta" id="loadSub">Talking to NEAR RPC and holder indexes</div>
+      </div>
+    </div>
+    <div class="pulse-bar" aria-hidden="true"><span></span></div>
+    <ul class="load-steps" id="loadSteps">
+      <li data-i="0"><span class="dot"></span> Discover top holders</li>
+      <li data-i="1"><span class="dot"></span> Snapshot contract &amp; balances</li>
+      <li data-i="2"><span class="dot"></span> Check market liquidity</li>
+      <li data-i="3"><span class="dot"></span> Score risk &amp; explain</li>
+    </ul>
+  </section>
+
+  <section class="card delay-2" id="out" aria-live="polite">
     <div id="summary"></div>
-    <h3>Agent explanation</h3>
-    <pre id="expl"></pre>
-    <h3>Tool steps</h3>
-    <ul class="steps" id="steps"></ul>
-    <h3>Raw JSON</h3>
-    <pre id="raw"></pre>
-  </div>
+    <div id="whyWrap" class="why" hidden>
+      <h2>Why this score</h2>
+      <ol id="whyList"></ol>
+    </div>
+    <details class="adv" id="stepsBox" hidden>
+      <summary>Tool steps</summary>
+      <div class="adv-body"><ul class="steps" id="steps"></ul></div>
+    </details>
+    <details class="adv" id="rawBox" hidden>
+      <summary>Raw JSON</summary>
+      <div class="adv-body"><pre id="raw"></pre></div>
+    </details>
+  </section>
 
   <footer>
     Public repo: <a href="https://github.com/Nwa-Ani/wagmi-meme-agent-near">github.com/Nwa-Ani/wagmi-meme-agent-near</a>.
+    Built for AI Security &amp; Defense + Agent Economy. Not financial advice.
     API: <code>/api/analyze?token=wrap.near&amp;network=mainnet</code>, <code>/api/demo</code>, <code>/health</code>.
   </footer>
 </main>
 <script>
 const out = document.getElementById('out');
+const loading = document.getElementById('loading');
 const go = document.getElementById('go');
 const tokenEl = document.getElementById('token');
 const netEl = document.getElementById('network');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let loadTimer = null;
 
 document.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => {
-  tokenEl.value = b.dataset.t; netEl.value = 'mainnet';
+  tokenEl.value = b.dataset.t;
+  netEl.value = 'mainnet';
+  tokenEl.focus();
 }));
 
 document.getElementById('demoBtn').addEventListener('click', async () => {
-  go.disabled = true;
+  setBusy(true, true);
   try {
     const r = await fetch('/api/demo');
     const j = await r.json();
     renderDemo(j);
   } catch (e) {
-    alert(String(e));
-  } finally { go.disabled = false; }
+    showError(String(e));
+  } finally {
+    setBusy(false);
+  }
 });
 
 go.addEventListener('click', async () => {
   const token = tokenEl.value.trim();
-  if (!token) return alert('Enter a token account');
-  go.disabled = true;
+  if (!token) { tokenEl.focus(); return; }
+  setBusy(true, false);
   try {
     const url = `/api/analyze?token=${encodeURIComponent(token)}&network=${encodeURIComponent(netEl.value)}`;
     const r = await fetch(url);
     const j = await r.json();
     render(j);
   } catch (e) {
-    alert(String(e));
-  } finally { go.disabled = false; }
+    showError(String(e));
+  } finally {
+    setBusy(false);
+  }
 });
+
+function setBusy(on, offline) {
+  go.disabled = on;
+  document.getElementById('demoBtn').disabled = on;
+  if (on) {
+    out.classList.remove('on');
+    loading.classList.add('on');
+    document.getElementById('loadTitle').textContent = offline ? 'Loading offline demo…' : 'Checking the token…';
+    document.getElementById('loadSub').textContent = offline
+      ? 'Using local fixtures — no RPC'
+      : 'Talking to NEAR RPC and holder indexes';
+    startLoadAnim(offline);
+  } else {
+    loading.classList.remove('on');
+    stopLoadAnim();
+  }
+}
+
+function startLoadAnim(offline) {
+  stopLoadAnim();
+  const items = [...document.querySelectorAll('#loadSteps li')];
+  items.forEach(li => li.classList.remove('on', 'done'));
+  let i = 0;
+  const tick = () => {
+    items.forEach((li, idx) => {
+      li.classList.toggle('done', idx < i);
+      li.classList.toggle('on', idx === i);
+    });
+    i = Math.min(i + 1, items.length - 1);
+  };
+  tick();
+  if (reduceMotion) {
+    items.forEach(li => li.classList.add('on', 'done'));
+    return;
+  }
+  loadTimer = setInterval(tick, offline ? 280 : 900);
+}
+
+function stopLoadAnim() {
+  if (loadTimer) { clearInterval(loadTimer); loadTimer = null; }
+}
+
+function friendlyVerdict(v) {
+  if (v === 'RUG RISK') return 'HIGH RISK';
+  if (v === 'CAUTION') return 'CAUTION';
+  return 'LOOKS OK';
+}
 
 function verdictClass(v) {
   if (v === 'RUG RISK') return 'bad';
@@ -118,38 +552,127 @@ function verdictClass(v) {
   return 'ok';
 }
 
+function gaugeColor(v) {
+  if (v === 'RUG RISK') return 'var(--bad)';
+  if (v === 'CAUTION') return 'var(--warn)';
+  return 'var(--ok)';
+}
+
+function showError(msg) {
+  out.classList.add('on');
+  document.getElementById('whyWrap').hidden = true;
+  document.getElementById('stepsBox').hidden = true;
+  document.getElementById('rawBox').hidden = false;
+  document.getElementById('summary').innerHTML = `<div class="err">${escapeHtml(msg)}</div>`;
+  document.getElementById('raw').textContent = '';
+  document.getElementById('steps').innerHTML = '';
+}
+
 function render(j) {
-  out.hidden = false;
+  out.classList.add('on');
   const sum = document.getElementById('summary');
+  const whyWrap = document.getElementById('whyWrap');
+  const whyList = document.getElementById('whyList');
+  const stepsBox = document.getElementById('stepsBox');
+  const rawBox = document.getElementById('rawBox');
+
   if (j.error) {
-    sum.innerHTML = `<p class="bad">Error: ${escapeHtml(j.error)}</p>`;
-    document.getElementById('expl').textContent = j.explanation || '';
-    document.getElementById('steps').innerHTML = (j.steps||[]).map(s => `<li>[${s.ok?'ok':'FAIL'}] <b>${escapeHtml(s.tool)}</b>: ${escapeHtml(s.detail)}</li>`).join('');
+    whyWrap.hidden = true;
+    stepsBox.hidden = !(j.steps && j.steps.length);
+    rawBox.hidden = false;
+    sum.innerHTML = `<div class="err">Error: ${escapeHtml(j.error)}</div>
+      <p class="verdict-meta" style="margin-top:.7rem">${escapeHtml(j.explanation || '')}</p>`;
+    fillSteps(j.steps || []);
     document.getElementById('raw').textContent = JSON.stringify(j, null, 2);
     return;
   }
+
   const r = j.report;
-  const flags = (r.flags||[]).map(f => `<li>[${f.points>0?'+':''}${f.points}] ${escapeHtml(f.msg)}</li>`).join('');
+  const cls = verdictClass(r.verdict);
+  const label = friendlyVerdict(r.verdict);
   sum.innerHTML = `
-    <p class="verdict ${verdictClass(r.verdict)}">${escapeHtml(r.symbol||'')} (${escapeHtml(r.token)}) — ${r.score}/100 ${escapeHtml(r.verdict)}</p>
-    <p>${escapeHtml(j.roast||'')}</p>
-    <p style="color:var(--muted)">Holders: ${j.holder_count} via ${escapeHtml(j.holder_source)} on ${escapeHtml(j.network)}</p>
-    <ul class="flags">${flags}</ul>`;
-  document.getElementById('expl').textContent = j.explanation || '';
-  document.getElementById('steps').innerHTML = (j.steps||[]).map(s => `<li>[${s.ok?'ok':'FAIL'}] <b>${escapeHtml(s.tool)}</b>: ${escapeHtml(s.detail)}</li>`).join('');
+    <div class="verdict-card ${cls}">
+      <div class="gauge" id="gauge" style="--p:0; --gcolor:${gaugeColor(r.verdict)}">
+        <div class="gauge-val"><span id="scoreNum">0</span><small>/100 risk</small></div>
+      </div>
+      <div>
+        <p class="verdict-title">${escapeHtml(label)}</p>
+        <p class="verdict-meta">${escapeHtml(r.symbol || '')} · ${escapeHtml(r.token)} · ${escapeHtml(j.network)} · holders via ${escapeHtml(j.holder_source || '—')}</p>
+        <p class="roast">${escapeHtml(j.roast || '')}</p>
+      </div>
+    </div>`;
+
+  const flags = r.flags || [];
+  whyWrap.hidden = flags.length === 0;
+  whyList.innerHTML = flags.map((f, idx) => {
+    const pts = f.points;
+    const tagCls = pts < 0 ? 'good' : pts >= 15 ? 'risk' : 'mid';
+    const sign = pts > 0 ? '+' : '';
+    return `<li style="animation-delay:${0.05 + idx * 0.07}s">
+      <span class="tag ${tagCls}">${sign}${pts}</span>
+      <span>${escapeHtml(f.msg)}</span>
+    </li>`;
+  }).join('');
+
+  stepsBox.hidden = false;
+  rawBox.hidden = false;
+  fillSteps(j.steps || []);
   document.getElementById('raw').textContent = JSON.stringify(j, null, 2);
+  animateScore(r.score || 0);
+  out.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+}
+
+function fillSteps(steps) {
+  const el = document.getElementById('steps');
+  el.innerHTML = steps.map((s, idx) =>
+    `<li style="animation-delay:${0.04 + idx * 0.08}s">
+      <span class="${s.ok ? 'ok' : 'fail'}">${s.ok ? 'ok' : 'FAIL'}</span>
+      <b>${escapeHtml(s.tool)}</b> — ${escapeHtml(s.detail)}
+    </li>`
+  ).join('');
+}
+
+function animateScore(target) {
+  const num = document.getElementById('scoreNum');
+  const gauge = document.getElementById('gauge');
+  if (!num || !gauge) return;
+  if (reduceMotion) {
+    num.textContent = String(target);
+    gauge.style.setProperty('--p', String(target));
+    return;
+  }
+  const start = performance.now();
+  const dur = 900;
+  const tick = (now) => {
+    const t = Math.min(1, (now - start) / dur);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const val = Math.round(target * eased);
+    num.textContent = String(val);
+    gauge.style.setProperty('--p', String(val));
+    if (t < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 function renderDemo(j) {
-  out.hidden = false;
-  const parts = (j.items||[]).map(it => {
+  out.classList.add('on');
+  document.getElementById('whyWrap').hidden = true;
+  document.getElementById('stepsBox').hidden = true;
+  document.getElementById('rawBox').hidden = false;
+  const parts = (j.items || []).map(it => {
     const r = it.report;
-    return `<p class="verdict ${verdictClass(r.verdict)}">${escapeHtml(r.symbol)} — ${r.score}/100 ${escapeHtml(r.verdict)}</p><p>${escapeHtml(it.roast)}</p>`;
-  }).join('<hr style="border-color:#223049">');
-  document.getElementById('summary').innerHTML = parts || '<p>No fixtures</p>';
-  document.getElementById('expl').textContent = 'Offline fixture demo (no RPC).';
-  document.getElementById('steps').innerHTML = '';
+    const cls = verdictClass(r.verdict);
+    return `<div class="demo-item">
+      <p class="verdict-title" style="color:var(--${cls === 'ok' ? 'ok' : cls === 'warn' ? 'warn' : 'bad'})">${escapeHtml(friendlyVerdict(r.verdict))}</p>
+      <p class="verdict-meta">${escapeHtml(r.symbol)} · ${r.score}/100</p>
+      <p class="roast">${escapeHtml(it.roast)}</p>
+    </div>`;
+  }).join('');
+  document.getElementById('summary').innerHTML = `<div class="demo-grid">${parts || '<p>No fixtures</p>'}</div>
+    <p class="verdict-meta" style="margin-top:.8rem">Offline fixture demo (no RPC).</p>`;
   document.getElementById('raw').textContent = JSON.stringify(j, null, 2);
+  document.getElementById('steps').innerHTML = '';
+  out.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
 }
 
 function escapeHtml(s) {
