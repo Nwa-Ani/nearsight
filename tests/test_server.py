@@ -26,7 +26,7 @@ def test_health_and_demo():
         assert len(demo["items"]) >= 2
         with urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=5) as r:
             html = r.read().decode()
-        assert "WAGMI Meme Agent" in html
+        assert "NearSight" in html
         assert "wallet connect" in html.lower() or "No wallet connect" in html
     finally:
         httpd.shutdown()

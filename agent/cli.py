@@ -15,7 +15,7 @@ OWNER_ACCOUNT = "YOUR_ACCOUNT.near"
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="WAGMI Meme Agent (NEAR) — read-only rug-risk agent")
+    ap = argparse.ArgumentParser(description="NearSight — read-only rug-risk agent for NEAR")
     ap.add_argument("token", nargs="?", default="wrap.near")
     ap.add_argument("--network", default="mainnet", choices=["testnet", "mainnet"])
     ap.add_argument("--holders", default="", help="comma-separated; skips auto discovery when set")

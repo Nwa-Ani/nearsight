@@ -1,6 +1,6 @@
-# WAGMI Meme Agent (NEAR)
+# NearSight
 
-Built at **NEAR HACKATHON 2026**. A read-only memecoin **risk agent** for NEAR NEP-141 tokens.
+**NearSight** was built at **NEAR HACKATHON 2026**. A read-only memecoin **risk agent** for NEAR NEP-141 tokens.
 
 It discovers top holders, reads the token contract over NEAR RPC, optionally pulls DexScreener liquidity, scores rug risk 0-100, and explains the verdict with every tool step recorded.
 
@@ -99,7 +99,9 @@ No runtime dependencies beyond Python 3.9+ standard library.
 
 ## Hosted demo
 
-After deploy: `https://<service>.onrender.com` (free plan; may cold-start).
+Hosted demo (free plan; may cold-start): https://wagmi-meme-agent-near.onrender.com
+
+The repository and Render service still use the earlier `wagmi-meme-agent-near` id. The product name is NearSight.
 
 - UI: `/`
 - Health: `/health`

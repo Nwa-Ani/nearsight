@@ -1,1 +1,1 @@
-"""WAGMI Meme Agent for NEAR."""
+"""NearSight: read-only rug-risk agent for NEAR."""
