@@ -28,5 +28,7 @@ def test_health_and_demo():
             html = r.read().decode()
         assert "NearSight" in html
         assert "wallet connect" in html.lower() or "No wallet connect" in html
+        assert "github.com" not in html.lower()
+        assert "Public repo" not in html
     finally:
         httpd.shutdown()
