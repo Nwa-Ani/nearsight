@@ -103,7 +103,7 @@ Hosted demo (free plan; may cold-start): https://nearsight.onrender.com
 
 The earlier URL https://wagmi-meme-agent-near.onrender.com stays up as an alias.
 
-The repository and Render service still use the earlier `wagmi-meme-agent-near` id. The product name is NearSight.
+**Source:** https://github.com/Nwa-Ani/nearsight
 
 - UI: `/`
 - Health: `/health`

@@ -19,7 +19,7 @@ NEARBLOCKS = {
     "mainnet": "https://api.nearblocks.io",
     "testnet": "https://api-testnet.nearblocks.io",
 }
-UA = {"User-Agent": "wagmi-meme-agent-near/1.0 (+https://github.com/Nwa-Ani/wagmi-meme-agent-near)"}
+UA = {"User-Agent": "nearsight/1.0 (+https://github.com/Nwa-Ani/nearsight)"}
 
 
 def _get_json(url, timeout=20):
